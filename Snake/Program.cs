@@ -6,12 +6,15 @@ namespace Snake
 {
     class Program
     {
+        static Random rand = new Random();
+
         static int screenWidth = 120;
         static int screenHeight = 30;
 
         static ConsoleKey KeyPress;
 
         static LinkedList<Snek> sneke = new();
+        static Snek[] tailTemp = new Snek[1];
         static int Direction;
         static int x = 60;
         static int y = 15;
@@ -19,6 +22,7 @@ namespace Snake
         static int foodY;
         static int foodX;
         static int score;
+
         static bool isDead = false;
         
         static void Main(string[] args)
@@ -31,6 +35,8 @@ namespace Snake
                 Console.Write("=");
                 Console.SetCursorPosition(40, 2);
                 Console.Write("SNAKE GAME");
+                Console.SetCursorPosition(60, 2);
+                Console.Write($"Score: {score}");
                 Console.SetCursorPosition(i, 4);
                 Console.Write("=");
                 Console.SetCursorPosition(i, 29);
@@ -46,8 +52,11 @@ namespace Snake
 
             Console.CursorVisible = false;
             MakeSnek();
-      
+
             // game loop
+
+            food();
+
             while (!isDead)
             {
                 // timing and input
@@ -59,7 +68,7 @@ namespace Snake
                 Movement();
 
                 // game logic
-                if (sneke.First.Value.x >= screenWidth - 2 || sneke.First.Value.y >= screenHeight - 2 || sneke.First.Value.y <= 5 || sneke.First.Value.x <= 2)
+                if (sneke.First.Value.x >= screenWidth - 1 || sneke.First.Value.y >= screenHeight - 1 || sneke.First.Value.y <= 4 || sneke.First.Value.x <= 1)
                 {
                     isDead = true;
                 }
@@ -70,27 +79,37 @@ namespace Snake
                         isDead = true;
                     }
                 }
+                if (sneke.First.Value.x == foodX && sneke.First.Value.y == foodY)
+                {
+                    score += 1;
+                    sneke.AddLast(new Snek(sneke.Last.Value.x, sneke.Last.Value.y));
+                    food();
+                }
 
                 // display stuff
+                if (Direction == 0 || Direction == 1)
+                {
+                    Thread.Sleep(140);
+                }
+                else
+                {
+                    Thread.Sleep(100);
+                }
                 Update();
             }
-            
         }
         static void Update()
         {
-            for (int i = 1; i < screenWidth - 1; i++)
-            {
-                for (int j = 6; j < screenHeight - 1; j++)
-                {
-                    Console.SetCursorPosition(i, j);
-                    Console.Write(" ");
-                }
-            }
+            Console.SetCursorPosition(foodX, foodY);
+            Console.Write("%");
             foreach (Snek segment in sneke)
             {
                 Console.SetCursorPosition(segment.x, segment.y);
                 Console.Write("■");
             }
+
+            Console.SetCursorPosition(tailTemp[0].x, tailTemp[0].y);
+            Console.Write(' ');
         }
         static void InputHandler()
         {
@@ -108,7 +127,6 @@ namespace Snake
         }
         static void Movement()
         {
-
             switch (Direction)
             {
                 case 0: // UP
@@ -121,9 +139,17 @@ namespace Snake
                     sneke.AddFirst(new Snek(sneke.First.Value.x - 1, sneke.First.Value.y)); break;
             }
 
+            tailTemp[0] = new Snek(sneke.Last.Value.x, sneke.Last.Value.y);
             sneke.RemoveLast();
         }
+        static void food()
+        {
+            foodX = rand.Next(2, 28);
+            foodY = rand.Next(6, 25);
 
+            Console.SetCursorPosition(60, 2);
+            Console.Write($"Score: {score}");
+        }
         static void MakeSnek()
         {
             for (int i = 0; i <= 10; i++)
